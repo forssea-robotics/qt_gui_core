@@ -170,3 +170,7 @@ class NodeItem(GraphItem):
                 outgoing_edge.set_label_color()
                 if self._highlight_level > 2 and outgoing_edge.to_node != self:
                     outgoing_edge.to_node.set_node_color()
+    
+    def mouseDoubleClickEvent(self, event):
+        if self._topic:
+            system("xterm -title {} -e \"rostopic echo -c {}\" &".format(str(self._label.text()), str(self._label.text())))
