@@ -31,6 +31,7 @@
 from __future__ import print_function
 
 import sys
+from os import system
 
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtGui import QBrush, QPainterPath, QPen
@@ -84,6 +85,7 @@ class NodeItem(GraphItem):
     def parse_shape(self, shape, bounding_box):
         if shape in ('box', 'rect', 'rectangle'):
             self._graphics_item = QGraphicsRectItem(bounding_box)
+            self._topic = True
         elif shape in ('ellipse', 'oval', 'circle'):
             self._graphics_item = QGraphicsEllipseItem(bounding_box)
         elif shape in ('box3d', ):
@@ -170,7 +172,7 @@ class NodeItem(GraphItem):
                 outgoing_edge.set_label_color()
                 if self._highlight_level > 2 and outgoing_edge.to_node != self:
                     outgoing_edge.to_node.set_node_color()
-    
+
     def mouseDoubleClickEvent(self, event):
         if self._topic:
             system("xterm -title {} -e \"rostopic echo -c {}\" &".format(str(self._label.text()), str(self._label.text())))
