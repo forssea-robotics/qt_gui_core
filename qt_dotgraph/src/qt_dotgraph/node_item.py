@@ -32,6 +32,8 @@ from __future__ import print_function
 
 import sys
 from os import system
+import rospy as rp
+from rosnode import get_node_names
 
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtGui import QBrush, QPainterPath, QPen
@@ -45,10 +47,10 @@ from qt_dotgraph.graph_item import GraphItem
 
 class NodeItem(GraphItem):
 
-    def __init__(
-            self, highlight_level, bounding_box, label, shape, color=None,
-            parent=None, label_pos=None, tooltip=None):
+    def __init__(self, highlight_level, bounding_box, label, shape, color=None, parent=None, label_pos=None,
+                 tooltip=None):
         super(NodeItem, self).__init__(highlight_level, parent)
+        self._topic, self._node = False, False
 
         self._default_color = self._COLOR_BLACK if color is None else color
         self._brush = QBrush(self._default_color)
@@ -61,7 +63,7 @@ class NodeItem(GraphItem):
         self._incoming_edges = set()
         self._outgoing_edges = set()
 
-        self.parse_shape(shape, bounding_box)
+        self.parse_shape(shape, bounding_box, label)
         self.addToGroup(self._graphics_item)
 
         self._label = QGraphicsSimpleTextItem(label)
@@ -82,13 +84,14 @@ class NodeItem(GraphItem):
 
         self.hovershape = None
 
-    def parse_shape(self, shape, bounding_box):
+    def parse_shape(self, shape, bounding_box, label):
         if shape in ('box', 'rect', 'rectangle'):
             self._graphics_item = QGraphicsRectItem(bounding_box)
-            self._topic = True
+            self._topic = label in [topic_info[0] for topic_info in rp.get_published_topics()]
         elif shape in ('ellipse', 'oval', 'circle'):
             self._graphics_item = QGraphicsEllipseItem(bounding_box)
-        elif shape in ('box3d', ):
+            self._node = label in get_node_names("/")
+        elif shape in ('box3d',):
             self._graphics_item = QGraphicsBox3dItem(bounding_box)
         else:
             print("Invalid shape '%s', defaulting to ellipse" % shape, file=sys.stderr)
@@ -175,4 +178,8 @@ class NodeItem(GraphItem):
 
     def mouseDoubleClickEvent(self, event):
         if self._topic:
-            system("xterm -title {} -e \"rostopic echo -c {}\" &".format(str(self._label.text()), str(self._label.text())))
+            system("xterm -hold -title {} -e \"rostopic echo -c {} -w 6\" &".format(str(self._label.text()),
+                                                                                    str(self._label.text())))
+        elif self._node:
+            system("xterm -hold -title {} -e \"rosnode info {}\" &".format(str(self._label.text()),
+                                                                           str(self._label.text())))
