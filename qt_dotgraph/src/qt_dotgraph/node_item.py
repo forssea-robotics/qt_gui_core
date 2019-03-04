@@ -178,8 +178,8 @@ class NodeItem(GraphItem):
 
     def mouseDoubleClickEvent(self, event):
         if self._topic:
-            system("xterm -hold -title {} -e \"rostopic echo -c {} -w 6\" &".format(str(self._label.text()),
+            system("terminator --title {} -e \"rostopic echo -c {} -w 6\" &".format(str(self._label.text()),
                                                                                     str(self._label.text())))
         elif self._node:
-            system("xterm -hold -title {} -e \"rosnode info {}\" &".format(str(self._label.text()),
-                                                                           str(self._label.text())))
+            system("terminator -hold --title {} -e \"rosnode info {}\" &".format(str(self._label.text()),
+                                                                                 str(self._label.text())))
